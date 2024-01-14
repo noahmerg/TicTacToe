@@ -1,11 +1,29 @@
 {
   "version": 3,
   "targets": {
-    "net8.0-windows7.0": {}
+    "net8.0-windows7.0": {
+      "AI/1.0.0": {
+        "type": "project",
+        "compile": {
+          "bin/placeholder/AI.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/AI.dll": {}
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "AI/1.0.0": {
+      "type": "project",
+      "path": "../QLearning/AI.csproj",
+      "msbuildProject": "../QLearning/AI.csproj"
+    }
+  },
   "projectFileDependencyGroups": {
-    "net8.0-windows7.0": []
+    "net8.0-windows7.0": [
+      "AI >= 1.0.0"
+    ]
   },
   "packageFolders": {
     "C:\\Users\\nmerg\\.nuget\\packages\\": {}
@@ -33,7 +51,11 @@
       "frameworks": {
         "net8.0-windows7.0": {
           "targetAlias": "net8.0-windows",
-          "projectReferences": {}
+          "projectReferences": {
+            "D:\\Code\\QLearning\\QLearning\\AI.csproj": {
+              "projectPath": "D:\\Code\\QLearning\\QLearning\\AI.csproj"
+            }
+          }
         }
       },
       "warningProperties": {

@@ -22,6 +22,5 @@ namespace AI {
         // After the action is executed, the Id-Property of the game state has most 
         // likely changed (though not necessarily) 
         double ExecuteAction(IAction a);
-
     }
 }

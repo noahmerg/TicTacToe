@@ -4,3 +4,9 @@ C:\Users\nmerg\Desktop\QLearning_Solution\QLearning\QLearning\obj\Debug\AI.cspro
 C:\Users\nmerg\Desktop\QLearning_Solution\QLearning\QLearning\obj\Debug\AI.csproj.CoreCompileInputs.cache
 C:\Users\nmerg\Desktop\QLearning_Solution\QLearning\QLearning\obj\Debug\QLearning.dll
 C:\Users\nmerg\Desktop\QLearning_Solution\QLearning\QLearning\obj\Debug\QLearning.pdb
+D:\Code\QLearning\QLearning\bin\Debug\QLearning.dll
+D:\Code\QLearning\QLearning\bin\Debug\QLearning.pdb
+D:\Code\QLearning\QLearning\obj\Debug\AI.csproj.AssemblyReference.cache
+D:\Code\QLearning\QLearning\obj\Debug\AI.csproj.CoreCompileInputs.cache
+D:\Code\QLearning\QLearning\obj\Debug\QLearning.dll
+D:\Code\QLearning\QLearning\obj\Debug\QLearning.pdb

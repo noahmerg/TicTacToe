@@ -4,6 +4,21 @@
     "D:\\Code\\QLearning\\TicTacToe\\TicTacToe.csproj": {}
   },
   "projects": {
+    "D:\\Code\\QLearning\\QLearning\\AI.csproj": {
+      "restore": {
+        "projectUniqueName": "D:\\Code\\QLearning\\QLearning\\AI.csproj",
+        "projectName": "AI",
+        "projectPath": "D:\\Code\\QLearning\\QLearning\\AI.csproj",
+        "frameworks": {
+          "net35": {
+            "projectReferences": {}
+          }
+        }
+      },
+      "frameworks": {
+        "net35": {}
+      }
+    },
     "D:\\Code\\QLearning\\TicTacToe\\TicTacToe.csproj": {
       "version": "1.0.0",
       "restore": {
@@ -27,7 +42,11 @@
         "frameworks": {
           "net8.0-windows7.0": {
             "targetAlias": "net8.0-windows",
-            "projectReferences": {}
+            "projectReferences": {
+              "D:\\Code\\QLearning\\QLearning\\AI.csproj": {
+                "projectPath": "D:\\Code\\QLearning\\QLearning\\AI.csproj"
+              }
+            }
           }
         },
         "warningProperties": {

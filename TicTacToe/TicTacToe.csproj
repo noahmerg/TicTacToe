@@ -8,4 +8,8 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\QLearning\AI.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -1,7 +1,9 @@
-﻿using AI.QLearning;
+﻿using AI;
+using AI.QLearning;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -9,7 +11,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
+// clean up code structure, seems like everything is calling everything as if its all a big band-aid solution
 namespace TicTacToe
 {
     public partial class MainWindow : Window
@@ -18,10 +22,35 @@ namespace TicTacToe
         public MainWindow()
         {
             InitializeComponent();
-            InitializeGame();
             InitializeGUI();
+            InitializeGame();
+            StartGame();
         }
         #endregion
+
+        private void StartGame()
+        {
+            if (Mode == 0)
+            {
+                StartPlayerVsAi();
+            }
+            else if (Mode == 1)
+            {
+                StartAiVsAi();
+            }
+        }
+
+        private void StartPlayerVsAi()
+        {
+            if (TicTacToe.CurrentPlayer == "O")
+            {
+                makeAIMove();
+            }
+        }
+        private void StartAiVsAi()
+        {
+
+        }
 
         #region --- Init Functions ---
         private void InitializeGUI()
@@ -35,6 +64,135 @@ namespace TicTacToe
 
         private void InitializeGame()
         {
+            clearButtons();
+            // make a new Game entirely
+            TicTacToe = new TicTacToeGame();
+        }
+        #endregion
+
+        #region --- Listener ---
+        // Method gets called everytime a "button" is clicked
+        private void PlayerClicksSpace(object sender, RoutedEventArgs e)
+        {
+            var space = (Button)sender;
+            if (!String.IsNullOrWhiteSpace(space.Content?.ToString())) return;
+            space.Content = TicTacToe.CurrentPlayer;
+
+            var coordinates = space.Tag.ToString().Split(',');
+            var x = int.Parse(coordinates[0]);
+            var y = int.Parse(coordinates[1]);
+            var clickedField = new Position() { x = x, y = y };
+            TicTacToe.ExecuteAction(clickedField);
+
+            // Check if a player has won
+            if (TicTacToe.CheckWinner(TicTacToe.CurrentPlayer))
+            {
+                winnerText.Text = $"{TicTacToe.CurrentPlayer} WINS!";
+                InitializeGame();
+                StartGame();
+                return;
+            }
+            // or if it's a draw
+            else if (TicTacToe.CheckForFullBoard())
+            {
+                winnerText.Text = "DRAW!";
+                InitializeGame();
+                StartGame();
+                return;
+            }
+
+            TicTacToe.SetNextPlayer();
+            if (TicTacToe.CurrentPlayer == "O")
+            {
+                makeAIMove();
+            }
+        }
+
+        private void ModeSelected(object sender, RoutedEventArgs e)
+        {
+            SetMode(ModeSelect.SelectedIndex);
+        }
+
+        // when clicked on new Game a new game is init (might need to be changed later for AI Reasons)
+        private void btnNewGame_Click(object sender, RoutedEventArgs e)
+        {
+            InitializeGame();
+            winnerText.Text = "";
+            StartGame();
+        }
+        #endregion
+
+        #region --- Helper Functions ---
+        private async void makeAIMove()
+        {
+            disableButtons();
+            List<IAction> possibleActions = TicTacToe.PossibleActions;
+            Position randomAction = (Position) possibleActions[new Random().Next(possibleActions.Count)];
+            foreach (var control in gameBoard.Children)
+            {
+                if (control is Button button)
+                {
+                    if (button.Tag != null && button.Tag.ToString() == $"{randomAction.x},{randomAction.y}")
+                    {
+                        await Task.Delay(1000);
+                        button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                        break;
+                    }
+                }
+            }
+            enableButtons();
+        }
+
+        private void SetMode(int modeIndex)
+        {
+            if(modeIndex == 0) // Player vs AI doesnt need Discount, Num Iterations, Train, etc.
+            {
+                Mode = 0;
+                DiscountRateLabel.Visibility = Visibility.Hidden;
+                DiscountRate.Visibility = Visibility.Hidden;
+                NumIterationsLabel.Visibility = Visibility.Hidden;
+                NumIterations.Visibility = Visibility.Hidden;
+                Train.Visibility = Visibility.Hidden;
+                Progress.Visibility = Visibility.Hidden;
+                enableButtons();
+            }
+            else // AI vs AI (training)
+            {
+                Mode = 1;
+                DiscountRateLabel.Visibility = Visibility.Visible;
+                DiscountRate.Visibility = Visibility.Visible;
+                NumIterationsLabel.Visibility = Visibility.Visible;
+                NumIterations.Visibility = Visibility.Visible;
+                Train.Visibility = Visibility.Visible;
+                Progress.Visibility = Visibility.Visible;
+                disableButtons();
+            }
+            InitializeGame();
+        }
+        private void enableButtons()
+        {
+            foreach (var control in gameBoard.Children)
+            {
+                if (control is Button)
+                {
+                    ((Button)control).IsEnabled = true;
+                }
+            }
+        }
+
+        private void disableButtons()
+        {
+            foreach (var control in gameBoard.Children)
+            {
+                if (control is Button)
+                {
+                    // clear each Cell
+                    ((Button)control).IsEnabled = false;
+                }
+            }
+        }
+        private void clearButtons()
+        {
             foreach (var control in gameBoard.Children)
             {
                 if (control is Button)
@@ -43,75 +201,6 @@ namespace TicTacToe
                     ((Button)control).Content = String.Empty;
                 }
             }
-            // make a new Game entirely
-            _Game = new Game();
-        }
-        #endregion
-
-        #region --- Listener ---
-        private void ModeSelected(object sender, RoutedEventArgs e)
-        {
-
-            SetMode(ModeSelect.SelectedIndex);
-        }
-        private void PlayerClicksSpace(object sender, RoutedEventArgs e)
-        {
-            var space = (Button)sender;
-            if (!String.IsNullOrWhiteSpace(space.Content?.ToString())) return;
-            space.Content = _Game.CurrentPlayer;
-
-            var coordinates = space.Tag.ToString().Split(',');
-            var x = int.Parse(coordinates[0]);
-            var y = int.Parse(coordinates[1]);
-            var clickedField = new Position() { x = x, y = y };
-            _Game.UpateBoard(clickedField, _Game.CurrentPlayer);
-
-            if (_Game.PlayerWin())
-            {
-                winnerText.Text = $"{_Game.CurrentPlayer} WINS!";
-                InitializeGame();
-                return;
-            }
-            
-            if (_Game.IsDraw())
-            {
-                winnerText.Text = "DRAW!";
-                InitializeGame();
-                return;
-            }
-
-            _Game.SetNextPlayer();
-        }
-
-        private void btnNewGame_Click(object sender, RoutedEventArgs e)
-        {
-            InitializeGame();
-            winnerText.Text = "";
-        }
-        #endregion
-
-        #region --- Helper Functions ---
-        private void SetMode(int Mode)
-        {
-            if(Mode == 0)
-            {
-                DiscountRateLabel.Visibility = Visibility.Hidden;
-                DiscountRate.Visibility = Visibility.Hidden;
-                NumIterationsLabel.Visibility = Visibility.Hidden;
-                NumIterations.Visibility = Visibility.Hidden;
-                Train.Visibility = Visibility.Hidden;
-                Progress.Visibility = Visibility.Hidden;
-            }
-            else
-            {
-                DiscountRateLabel.Visibility = Visibility.Visible;
-                DiscountRate.Visibility = Visibility.Visible;
-                NumIterationsLabel.Visibility = Visibility.Visible;
-                NumIterations.Visibility = Visibility.Visible;
-                Train.Visibility = Visibility.Visible;
-                Progress.Visibility = Visibility.Visible;
-            }
-            InitializeGame();
         }
         private void ValidateZeroOne(object sender, RoutedEventArgs e)
         {
@@ -137,8 +226,8 @@ namespace TicTacToe
         #endregion
 
         #region --- Private Member ---
-        private Game _Game;
-        private QLearningAI LearningAI;
+        private TicTacToeGame TicTacToe;
+        private int Mode;
         #endregion
     }
 }

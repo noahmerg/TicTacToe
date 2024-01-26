@@ -106,13 +106,17 @@ namespace TicTacToe
             UpdateProgessBar();
 
             // if Game Has Ended
-            Debug.WriteLine(Game.gameHasEnded);
             if (Game.gameHasEnded)
             {
+                if (finishedAiTraining)
+                {
+                    winnerText.Text = Game.CheckWinner("X") ? "X Wins" : Game.CheckWinner("O") ? "O Wins" : "Draw";
+                }
                 Reset();
             }
         }
 
+        // Function inspired by code provided by Professor Cristof Rezk-Salama (CRS | C.Rezk-Salama@hochschule-trier.de)
         private void UpdateAIValues()
         {
             int LearnPhase = MaxNumIterations / 4;
@@ -147,6 +151,7 @@ namespace TicTacToe
             }
             else
             {
+                finishedAiTraining = true;
                 AI_x.ExplorationRate = 0.0;
                 AI_x.LearningRate = 0.0;
                 AI_y.ExplorationRate = 0.0;
@@ -158,7 +163,7 @@ namespace TicTacToe
 
 
         #region --- Button Listener ---
-        private void ButtonListener(object sender, RoutedEventArgs e)
+        private async void ButtonListener(object sender, RoutedEventArgs e)
         {
             Button button = (Button)sender;
 
@@ -170,7 +175,15 @@ namespace TicTacToe
             Game.TryExecuteAction(column, row);
 
             if (!Game.gameHasEnded) AI_y.Learn(1);
-            if (Game.gameHasEnded) Reset();
+            UpdateButtons();
+            if (Game.gameHasEnded)
+            {
+                winnerText.Text = Game.CheckWinner("X") ? "X Wins" : Game.CheckWinner("O") ? "O Wins" : "Draw";
+                disableButtons();
+                await Task.Delay(1000);
+                enableButtons();
+                Reset();
+            }
             UpdateButtons();
         }
         private void StartTraining(object sender, RoutedEventArgs e)
@@ -182,6 +195,8 @@ namespace TicTacToe
             AI_x.DiscountRate = (double)d;
             AI_y.DiscountRate = (double)d;
             StartTimer(0.0001);
+            winnerText.Text = "";
+            finishedAiTraining = false;
         }
         private void ModeSelected(object sender, RoutedEventArgs e)
         {
@@ -196,18 +211,17 @@ namespace TicTacToe
         #endregion
 
         #region --- Helper Functions ---
-
         private void Reset()
         {
-            ClearButtons();
             Game.Reset();
-            UpdateButtons();
+            ClearButtons();
         }
         
         private void SetMode(int modeIndex)
         {
             if(modeIndex == 0) // Player vs AI doesnt need Discount, Num Iterations, Train, etc.
             {
+                winnerText.Text = String.Empty;
                 Timer.Stop();
                 DiscountRateLabel.Visibility = Visibility.Hidden;
                 DiscountRate.Visibility = Visibility.Hidden;
@@ -221,6 +235,7 @@ namespace TicTacToe
             }
             else if (modeIndex == 1)// AI vs AI (training)
             {
+                winnerText.Text = String.Empty;
                 DiscountRateLabel.Visibility = Visibility.Visible;
                 DiscountRate.Visibility = Visibility.Visible;
                 DiscountRate.IsEnabled = true;
@@ -250,7 +265,6 @@ namespace TicTacToe
             {
                 if (control is Button btn)
                 {
-                    // clear each Cell
                     btn.IsEnabled = false;
                 }
             }
@@ -261,11 +275,12 @@ namespace TicTacToe
             {
                 if (control is Button btn)
                 {
-                    // clear each Cell
                     btn.Content = String.Empty;
                 }
             }
         }
+
+        // Original code provided by Professor Cristof Rezk-Salama (CRS | C.Rezk-Salama@hochschule-trier.de)
         private void ValidateZeroOne(object sender, RoutedEventArgs e)
         {
             if (sender is TextBox tb)
@@ -278,6 +293,7 @@ namespace TicTacToe
             }
         }
 
+        // Original code provided by Professor Cristof Rezk-Salama (CRS | C.Rezk-Salama@hochschule-trier.de)
         private void ValidatePositiveInt(object sender, RoutedEventArgs e)
         {
             if (sender is TextBox tb)
@@ -292,6 +308,7 @@ namespace TicTacToe
         #region --- Private Member ---
         private int MaxNumIterations = 100000;
         private int CurrentIteration = 0;
+        private bool finishedAiTraining = false;
 
         private QLearningAI AI_x;
         private QLearningAI AI_y;

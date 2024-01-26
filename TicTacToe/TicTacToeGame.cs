@@ -19,19 +19,17 @@ namespace TicTacToe
         private const string x = "X";
         private const string o = "O";
         private GameBoard gameBoard;
-        private int gameBoardSize;
         private Position[] allActions;
         public bool gameHasEnded { get; private set; }
 
         public TicTacToeGame() 
         {
-            gameBoardSize = 3;
             gameHasEnded = false;
-            gameBoard = new GameBoard(gameBoardSize);
+            gameBoard = new GameBoard(3);
             // set x as startingplayer
             CurrentPlayer = x;
             // add Positions to allActions so we dont need to create new Objects which would destroy the algorithm (yes I did this and didnt notice)
-            allActions = new Position[gameBoardSize * gameBoardSize];
+            allActions = new Position[9];
             allActions[0] = new Position { Name = "Top Left", x = 0, y = 0};
             allActions[1] = new Position { Name = "Top Middle", x = 1, y = 0 };
             allActions[2] = new Position { Name = "Top Right", x = 2, y = 0 };
@@ -41,11 +39,17 @@ namespace TicTacToe
             allActions[6] = new Position { Name = "Bottom Left", x = 0, y = 2 };
             allActions[7] = new Position { Name = "Bottom Middle", x = 1, y = 2 };
             allActions[8] = new Position { Name = "Bottom Right", x = 2, y = 2 };
+
+            /*      x0 x1 x2
+             *   y0 [] [] []
+             *   y1 [] [] []
+             *   y2 [] [] []
+             */
         }
 
         public void SetNextPlayer()
         { 
-            // if x => o else o => x
+            // x => o OR o => x
             CurrentPlayer = CurrentPlayer == x ? o : x;
         }
 
@@ -69,20 +73,20 @@ namespace TicTacToe
             // if one of them equals 3 it means the player has won
             int diagPos = 0;
             int diagNeg = 0;
-            for(int i = 0; i < gameBoardSize; i++)
+            for(int i = 0; i < 3; i++)
             {
                 int row = 0;
                 int col = 0;
-                for (int j = 0; j < gameBoardSize; j++)
+                for (int j = 0; j < 3; j++)
                 {
                     if (GetField(i, j) == player) row++;
                     if (GetField(j, i) == player) col++;
                 }
-                if (row == gameBoardSize || col == gameBoardSize) return true;
+                if (row == 3 || col == 3) return true;
                 if(GetField(i, i) == player) diagNeg++;
                 if(GetField(i, 2 - i) == player) diagPos++;
             }
-            if (diagPos == gameBoardSize || diagNeg == gameBoardSize) return true;
+            if (diagPos == 3 || diagNeg == 3) return true;
             return false;
             // i know this could be changed to return (diagPos == gameBoardSize || diagNeg == gameBoardSize) but this makes it easier for me
         }
@@ -90,9 +94,9 @@ namespace TicTacToe
         // if any field is null or empty return false | its that simple
         public bool CheckForFullBoard()
         {
-            for (int i = 0; i < gameBoardSize; ++i)
+            for (int i = 0; i < 3; ++i)
             {
-                for (int j = 0; j < gameBoardSize; ++j)
+                for (int j = 0; j < 3; ++j)
                 {
                     if (string.IsNullOrEmpty(gameBoard.GetField(i, j)))
                     { 
@@ -123,22 +127,65 @@ namespace TicTacToe
             int playerNegDiagonalCount = 0;
             int oppNegDiagonalCount = 0;
 
-            for (int i = 0; i < gameBoardSize; i++)
+            for (int i = 0; i < 3; i++)
             {
                 if (gameBoard.GetField(i, yPos) == player) playerRowCount++;
                 else if (gameBoard.GetField(i, yPos) == opponent) oppRowCount++;
                 if (gameBoard.GetField(xPos, i) == player) playerColumnCount++;
                 else if (gameBoard.GetField(xPos, i) == opponent) oppColumnCount++;
+                // only check for diagonal if the placed tile even is on a diagonal
+                if(xPos == yPos || xPos == 2 - yPos)
+                {
+                    if (gameBoard.GetField(i, i) == player) playerNegDiagonalCount++;
+                    else if (gameBoard.GetField(i, i) == opponent) oppNegDiagonalCount++;
+                    if (gameBoard.GetField(i, 2 - i) == player) playerPosDiagonalCount++;
+                    else if (gameBoard.GetField(i, 2 - i) == opponent) oppPosDiagonalCount++;
+                }
+            }
+
+            if (playerRowCount == 2 && oppRowCount == 0) return true;
+            else if (playerColumnCount == 2 && oppColumnCount == 0) return true;
+            else if (playerPosDiagonalCount == 2 && oppPosDiagonalCount == 0) return true;
+            else if (playerNegDiagonalCount == 2 && oppNegDiagonalCount == 0) return true;
+            else return false;
+        }
+
+        private bool CheckForPossibleLoss(string player)
+        {
+            string opponent = player == x ? o : x;
+
+
+            int playerPosDiagonalCount = 0;
+            int oppPosDiagonalCount = 0;
+
+            int playerNegDiagonalCount = 0;
+            int oppNegDiagonalCount = 0;
+
+            for (int i = 0; i < 3; i++)
+            {
                 if (gameBoard.GetField(i, i) == player) playerNegDiagonalCount++;
                 else if (gameBoard.GetField(i, i) == opponent) oppNegDiagonalCount++;
                 if (gameBoard.GetField(i, 2 - i) == player) playerPosDiagonalCount++;
                 else if (gameBoard.GetField(i, 2 - i) == opponent) oppPosDiagonalCount++;
-            }
 
-            if (playerRowCount == gameBoardSize - 1 && oppRowCount == 0) return true;
-            else if (playerColumnCount == gameBoardSize - 1 && oppColumnCount == 0) return true;
-            else if (playerPosDiagonalCount == gameBoardSize - 1 && oppPosDiagonalCount == 0) return true;
-            else if (playerNegDiagonalCount == gameBoardSize - 1 && oppNegDiagonalCount == 0) return true;
+                int playerRowCount = 0;
+                int playerColumnCount = 0;
+
+                int oppRowCount = 0;
+                int oppColumnCount = 0;
+
+                for (int j = 0; j < 3; j++)
+                {
+                    if (gameBoard.GetField(i, j) == player) playerRowCount++;
+                    else if (gameBoard.GetField(i, j) == opponent) oppRowCount++;
+                    if (gameBoard.GetField(j, i) == player) playerColumnCount++;
+                    else if (gameBoard.GetField(j, i) == opponent) oppColumnCount++;
+                }
+                if (playerRowCount == 0 && oppRowCount == 2) return true;
+                else if (playerColumnCount == 0 && oppColumnCount == 2) return true;
+            }
+            if (playerPosDiagonalCount == 0 && oppPosDiagonalCount == 2) return true;
+            else if (playerNegDiagonalCount == 0 && oppNegDiagonalCount == 2) return true;
             else return false;
         }
         #endregion
@@ -150,9 +197,9 @@ namespace TicTacToe
             {
                 uint id = 0;
 
-                for (int x = 0; x < gameBoardSize; x++)
+                for (int x = 0; x < 3; x++)
                 {
-                    for (int y = 0; y < gameBoardSize; y++)
+                    for (int y = 0; y < 3; y++)
                     {
                         // 2 bits / cell = 18 Bits in total at maximum
                         id <<= 2;
@@ -180,14 +227,14 @@ namespace TicTacToe
             {
                 List<IAction> actions = new List<IAction>();
                 // iterate over each field row for row
-                for( int i = 0; i < gameBoardSize; i++)
+                for( int i = 0; i < 3; i++)
                 {
-                    for (int j = 0; j < gameBoardSize; j++)
+                    for (int j = 0; j < 3; j++)
                     {
                         if(String.IsNullOrEmpty(GetField(i, j)))
                         {
                             // actions are 0-9 starting at top left row for row
-                            actions.Add(allActions[i + gameBoardSize * j]);
+                            actions.Add(allActions[i + 3 * j]);
                         }
                     }
                 }
@@ -208,15 +255,11 @@ namespace TicTacToe
 
             // set the field for the gameboard
             gameBoard.SetField(CurrentPlayer, xPos, yPos);
-
-            // check if the move resulted in two in a row/column/diagonal without enemy tile in the way
-            // by checking if the opponent of the opponent (which is the player) could win
             if (CheckForPossibleWin(CurrentPlayer, xPos, yPos))
             {
-                reward = 0.8;
+                reward = 0.6;
             }
-            // cecks if the enemy could win after this operation of if this move blocked it
-            if (CheckForPossibleWin(opponent, xPos, yPos))
+            if (CheckForPossibleLoss(CurrentPlayer))
             {
                 reward = -1.0;
             }
@@ -246,9 +289,10 @@ namespace TicTacToe
         }
         #endregion
         #region --- Public Execute Function For Manual Playing
+        // Function inspired by code provided by Professor Cristof Rezk-Salama (CRS | C.Rezk-Salama@hochschule-trier.de)
         public double TryExecuteAction(int x, int y)
         { 
-            return ExecuteAction(allActions[x + y * gameBoardSize]);
+            return ExecuteAction(allActions[x + y * 3]);
         }
         #endregion
     }

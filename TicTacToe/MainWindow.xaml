@@ -11,7 +11,7 @@
         <Style x:Key="boardButton" TargetType="{x:Type Button}">
             <Setter Property="Margin" Value="25"></Setter>
             <Setter Property="FontSize" Value="48"/>
-            <EventSetter Event="Click" Handler="PlayerClicksSpace"/>
+            <EventSetter Event="Click" Handler="ButtonListener"/>
         </Style>
     </Window.Resources>
     <Grid>
@@ -30,17 +30,18 @@
                 <RowDefinition Height="85"/>
             </Grid.RowDefinitions>
             <TextBlock HorizontalAlignment="Left" Margin="21,15,0,0" TextWrapping="Wrap" Text="Mode" VerticalAlignment="Top" Foreground="#FFE6E6E6" Height="16" Width="Auto"/>
-            <ComboBox HorizontalAlignment="Left" Margin="21,36,0,0" VerticalAlignment="Top" Width="120" SelectedIndex="0" Focusable="False" Height="22" x:Name="ModeSelect" SelectionChanged="ModeSelected"/>
+            <ComboBox HorizontalAlignment="Left" Margin="21,36,0,0" VerticalAlignment="Top" Width="120" SelectedIndex="0" Focusable="False" Height="22" x:Name="ModeSelect" SelectionChanged="ModeSelected">
+            </ComboBox>
             <TextBlock HorizontalAlignment="Left" Margin="21,15,0,0" Grid.Row="1" TextWrapping="Wrap" Text="Discount Rate" VerticalAlignment="Top" Foreground="#FFE6E6E6" Height="16" Width="Auto" x:Name="DiscountRateLabel"/>
-            <TextBox HorizontalAlignment="Left" Margin="21,38,0,0" Grid.Row="1" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" LostFocus="ValidateZeroOne" IsEnabled="False" x:Name="DiscountRate" Height="18">0.001</TextBox>
+            <TextBox HorizontalAlignment="Left" Margin="21,38,0,0" Grid.Row="1" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" LostFocus="ValidateZeroOne" IsEnabled="False" x:Name="DiscountRate" Height="18">0.9</TextBox>
             <TextBlock HorizontalAlignment="Left" Margin="21,15,0,0" Grid.Row="2" TextWrapping="Wrap" Text="Num Iterations" VerticalAlignment="Top" Foreground="#FFE6E6E6" Height="16" Width="Auto" x:Name="NumIterationsLabel"/>
             <TextBox HorizontalAlignment="Left" Margin="21,37,0,0" Grid.Row="2" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" LostFocus="ValidatePositiveInt" IsEnabled="False" x:Name="NumIterations" Height="18">1000000</TextBox>
-            <Button Content="Train" Height="18" HorizontalAlignment="Left" Margin="21,15,0,0" Grid.Row="3" VerticalAlignment="Top" Width="120" x:Name="Train"/>
+            <Button Content="Train" Height="18" HorizontalAlignment="Left" Margin="21,15,0,0" Grid.Row="3" VerticalAlignment="Top" Width="120" x:Name="Train" Click="StartTraining"/>
             <ProgressBar HorizontalAlignment="Left" Height="18" Margin="21,49,0,0" Grid.Row="3" VerticalAlignment="Top" Width="120" x:Name="Progress" Value="50"/>
             <Button Content="New Game" Grid.Row="7" Margin="25,25,25,25" FontSize="20" BorderBrush="White" Background="{x:Null}" Foreground="White" x:Name="btnNewGame" Click="btnNewGame_Click"/>
             <TextBlock HorizontalAlignment="Center" Grid.Row="5" TextWrapping="Wrap" Text="" VerticalAlignment="Center" Width="Auto" x:Name="winnerText" Foreground="#FFE6E6E6" FontSize="30"/>
         </Grid>
-        <Grid x:Name="gameBoard" Grid.Column="1" >
+        <Grid x:Name="GameBoard" Grid.Column="1" >
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
@@ -51,15 +52,15 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Button Tag="0,0" Style="{StaticResource boardButton}"/>
-            <Button Tag="0,1" Style="{StaticResource boardButton}" Grid.Column="1"/>
-            <Button Tag="0,2" Style="{StaticResource boardButton}" Grid.Column="2"/>
-            <Button Tag="1,0" Style="{StaticResource boardButton}" Grid.Row="1"/>
-            <Button Tag="1,1" Style="{StaticResource boardButton}" Grid.Column="1"  Grid.Row="1"/>
-            <Button Tag="1,2" Style="{StaticResource boardButton}" Grid.Column="2" Grid.Row="1"/>
-            <Button Tag="2,0" Style="{StaticResource boardButton}" Grid.Row="2"/>
-            <Button Tag="2,1" Style="{StaticResource boardButton}" Grid.Column="1" Grid.Row="2"/>
-            <Button Tag="2,2" Style="{StaticResource boardButton}" Grid.Column="2" Grid.Row="2"/>
+            <Button Style="{StaticResource boardButton}" Grid.Column="0" Grid.Row="0"/>
+            <Button Style="{StaticResource boardButton}" Grid.Column="1" Grid.Row="0"/>
+            <Button Style="{StaticResource boardButton}" Grid.Column="2" Grid.Row="0"/>
+            <Button Style="{StaticResource boardButton}" Grid.Column="0" Grid.Row="1"/>
+            <Button Style="{StaticResource boardButton}" Grid.Column="1" Grid.Row="1"/>
+            <Button Style="{StaticResource boardButton}" Grid.Column="2" Grid.Row="1"/>
+            <Button Style="{StaticResource boardButton}" Grid.Column="0" Grid.Row="2"/>
+            <Button Style="{StaticResource boardButton}" Grid.Column="1" Grid.Row="2"/>
+            <Button Style="{StaticResource boardButton}" Grid.Column="2" Grid.Row="2"/>
         </Grid>
     </Grid>
 

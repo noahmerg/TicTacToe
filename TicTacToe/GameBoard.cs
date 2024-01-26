@@ -18,32 +18,42 @@ namespace TicTacToe
             gameBoard = new string[i,i];
         }
 
-        public GameBoard(int x, int y) 
-        {
-            gameBoard = new string[x, y];
-        }
-
-        public void SetField(string player, Position position) 
+        public void SetField(string player, int x, int y) 
         {
             if (gameBoard == null)
             {
                 throw new ArgumentException("No Gameboard");
             }
-            if (!string.IsNullOrEmpty(gameBoard[position.x, position.y]))
+            if (!string.IsNullOrEmpty(gameBoard[x, y]))
             {
-                throw new ArgumentException($"Field is already set with {getField(position.x, position.y)} on Gameboard");
+                throw new ArgumentException($"Field is already set with {GetField(x, y)} on Gameboard");
             }
-            gameBoard[position.x, position.y] = player;
+            gameBoard[x, y] = player;
             
         }
 
-        public string getField(int x, int y)
+        public string GetField(int x, int y)
         {
             if (gameBoard == null)
             {
                 throw new ArgumentException("No Gameboard");
             }
             return gameBoard[x, y];
+        }
+
+        public void Reset()
+        {
+            if(gameBoard == null)
+            {
+                throw new ArgumentException("No Gameboard to Reset");
+            }
+            for (int i = 0; i < gameBoard.GetLength(0); i++)
+            {
+                for (int j = 0; j < gameBoard.GetLength(1); j++)
+                {
+                    gameBoard[i, j] = String.Empty;
+                }
+            }
         }
     }
 }

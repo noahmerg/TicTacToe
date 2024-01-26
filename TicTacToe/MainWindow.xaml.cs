@@ -1,5 +1,6 @@
 ﻿using AI;
 using AI.QLearning;
+using System.Diagnostics;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,37 +23,41 @@ namespace TicTacToe
         public MainWindow()
         {
             InitializeComponent();
+            InitiializeGame();
+            InitializeAI();
+            InitializeTimer();
             InitializeGUI();
-            InitializeGame();
-            StartGame();
         }
         #endregion
 
-        private void StartGame()
-        {
-            if (Mode == 0)
-            {
-                StartPlayerVsAi();
-            }
-            else if (Mode == 1)
-            {
-                StartAiVsAi();
-            }
-        }
-
-        private void StartPlayerVsAi()
-        {
-            if (TicTacToe.CurrentPlayer == "O")
-            {
-                makeAIMove();
-            }
-        }
-        private void StartAiVsAi()
-        {
-
-        }
-
         #region --- Init Functions ---
+        private void InitiializeGame()
+        {
+            Game = new TicTacToeGame();
+        }
+        private void InitializeAI()
+        {
+            AI_y = new QLearningAI()
+            {
+                GameState = Game,
+            };
+            AI_x = new QLearningAI()
+            {
+                GameState = Game,
+            };
+        }
+        private void InitializeTimer()
+        {
+            if (null != Timer)
+            {
+                Timer.Stop();
+            }
+            else
+            {
+                Timer = new DispatcherTimer();
+                Timer.Tick += LearnStep;
+            }
+        }
         private void InitializeGUI()
         {
             ModeSelect.Items.Clear();
@@ -61,144 +66,203 @@ namespace TicTacToe
             ModeSelect.SelectedIndex = 0;
             SetMode(0);
         }
+        #endregion
 
-        private void InitializeGame()
+        #region --- Update functions
+        private void UpdateProgessBar()
         {
-            clearButtons();
-            // make a new Game entirely
-            TicTacToe = new TicTacToeGame();
+            Progress.Value = CurrentIteration * 100 / (MaxNumIterations);
+        }
+
+        private void UpdateButtons()
+        {
+            foreach (var control in GameBoard.Children)
+            {
+                if (control is Button button)
+                {
+                    button.Content = Game.GetField(Grid.GetColumn(button), Grid.GetRow(button));
+                }
+            }
         }
         #endregion
 
-        #region --- Listener ---
-        // Method gets called everytime a "button" is clicked
-        private void PlayerClicksSpace(object sender, RoutedEventArgs e)
+        #region --- AI functions ---
+        private void StartTimer(double seconds)
         {
-            var space = (Button)sender;
-            if (!String.IsNullOrWhiteSpace(space.Content?.ToString())) return;
-            space.Content = TicTacToe.CurrentPlayer;
+            Timer.Stop();
+            Timer.Interval = TimeSpan.FromSeconds(seconds);
+            Timer.Start();
+        }
+        private async void LearnStep(object sender, EventArgs e)
+        {
+            QLearningAI currAI = Game.CurrentPlayer == "X" ? AI_x : AI_y;
 
-            var coordinates = space.Tag.ToString().Split(',');
-            var x = int.Parse(coordinates[0]);
-            var y = int.Parse(coordinates[1]);
-            var clickedField = new Position() { x = x, y = y };
-            TicTacToe.ExecuteAction(clickedField);
+            UpdateAIValues();
 
-            // Check if a player has won
-            if (TicTacToe.CheckWinner(TicTacToe.CurrentPlayer))
-            {
-                winnerText.Text = $"{TicTacToe.CurrentPlayer} WINS!";
-                InitializeGame();
-                StartGame();
-                return;
-            }
-            // or if it's a draw
-            else if (TicTacToe.CheckForFullBoard())
-            {
-                winnerText.Text = "DRAW!";
-                InitializeGame();
-                StartGame();
-                return;
-            }
+            currAI.Learn(1);
 
-            TicTacToe.SetNextPlayer();
-            if (TicTacToe.CurrentPlayer == "O")
+            CurrentIteration++;
+            UpdateButtons();
+            UpdateProgessBar();
+
+            // if Game Has Ended
+            Debug.WriteLine(Game.gameHasEnded);
+            if (Game.gameHasEnded)
             {
-                makeAIMove();
+                Reset();
             }
         }
 
+        private void UpdateAIValues()
+        {
+            int LearnPhase = MaxNumIterations / 4;
+
+            if (CurrentIteration < LearnPhase)
+            {
+                AI_x.LearningRate = 0.5;
+                AI_x.ExplorationRate = 1.0;
+                AI_y.LearningRate = 0.5;
+                AI_y.ExplorationRate = 1.0;
+            }
+            else if (CurrentIteration < 2 * LearnPhase)
+            {
+                AI_x.LearningRate = 0.4;
+                AI_x.ExplorationRate = 0.7;
+                AI_y.LearningRate = 0.4;
+                AI_y.ExplorationRate = 0.7;
+            }
+            else if (CurrentIteration < 3 * LearnPhase)
+            {
+                AI_x.LearningRate = 0.3;
+                AI_x.ExplorationRate = 0.5;
+                AI_y.LearningRate = 0.3;
+                AI_y.ExplorationRate = 0.5;
+            }
+            else if (CurrentIteration < 4 * LearnPhase)
+            {
+                AI_x.LearningRate = 0.2;
+                AI_x.ExplorationRate = 0.3;
+                AI_y.LearningRate = 0.2;
+                AI_y.ExplorationRate = 0.3;
+            }
+            else
+            {
+                AI_x.ExplorationRate = 0.0;
+                AI_x.LearningRate = 0.0;
+                AI_y.ExplorationRate = 0.0;
+                AI_y.LearningRate = 0.0;
+                Timer.Interval = TimeSpan.FromSeconds(0.5);
+            }
+        }
+        #endregion
+
+
+        #region --- Button Listener ---
+        private void ButtonListener(object sender, RoutedEventArgs e)
+        {
+            Button button = (Button)sender;
+
+            if (!String.IsNullOrWhiteSpace(button.Content?.ToString())) return;
+
+            var row = Grid.GetRow(button);
+            var column = Grid.GetColumn(button);
+
+            Game.TryExecuteAction(column, row);
+
+            if (!Game.gameHasEnded) AI_y.Learn(1);
+            if (Game.gameHasEnded) Reset();
+            UpdateButtons();
+        }
+        private void StartTraining(object sender, RoutedEventArgs e)
+        {
+            CurrentIteration = 0;
+            uint n = UInt32.Parse(NumIterations.Text);
+            MaxNumIterations = (int)n;
+            double d = Double.Parse(DiscountRate.Text);
+            AI_x.DiscountRate = (double)d;
+            AI_y.DiscountRate = (double)d;
+            StartTimer(0.0001);
+        }
         private void ModeSelected(object sender, RoutedEventArgs e)
         {
             SetMode(ModeSelect.SelectedIndex);
+            Reset();
         }
-
-        // when clicked on new Game a new game is init (might need to be changed later for AI Reasons)
         private void btnNewGame_Click(object sender, RoutedEventArgs e)
         {
-            InitializeGame();
             winnerText.Text = "";
-            StartGame();
+            Reset();
         }
         #endregion
 
         #region --- Helper Functions ---
-        private async void makeAIMove()
-        {
-            disableButtons();
-            List<IAction> possibleActions = TicTacToe.PossibleActions;
-            Position randomAction = (Position) possibleActions[new Random().Next(possibleActions.Count)];
-            foreach (var control in gameBoard.Children)
-            {
-                if (control is Button button)
-                {
-                    if (button.Tag != null && button.Tag.ToString() == $"{randomAction.x},{randomAction.y}")
-                    {
-                        await Task.Delay(1000);
-                        button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                        break;
-                    }
-                }
-            }
-            enableButtons();
-        }
 
+        private void Reset()
+        {
+            ClearButtons();
+            Game.Reset();
+            UpdateButtons();
+        }
+        
         private void SetMode(int modeIndex)
         {
             if(modeIndex == 0) // Player vs AI doesnt need Discount, Num Iterations, Train, etc.
             {
-                Mode = 0;
+                Timer.Stop();
                 DiscountRateLabel.Visibility = Visibility.Hidden;
                 DiscountRate.Visibility = Visibility.Hidden;
+                DiscountRate.IsEnabled = false;
                 NumIterationsLabel.Visibility = Visibility.Hidden;
                 NumIterations.Visibility = Visibility.Hidden;
+                NumIterations.IsEnabled = false;
                 Train.Visibility = Visibility.Hidden;
                 Progress.Visibility = Visibility.Hidden;
                 enableButtons();
             }
-            else // AI vs AI (training)
+            else if (modeIndex == 1)// AI vs AI (training)
             {
-                Mode = 1;
                 DiscountRateLabel.Visibility = Visibility.Visible;
                 DiscountRate.Visibility = Visibility.Visible;
+                DiscountRate.IsEnabled = true;
                 NumIterationsLabel.Visibility = Visibility.Visible;
                 NumIterations.Visibility = Visibility.Visible;
+                NumIterations.IsEnabled = true;
                 Train.Visibility = Visibility.Visible;
                 Progress.Visibility = Visibility.Visible;
                 disableButtons();
             }
-            InitializeGame();
         }
+
         private void enableButtons()
         {
-            foreach (var control in gameBoard.Children)
+            foreach (var control in GameBoard.Children)
             {
-                if (control is Button)
+                if (control is Button btn)
                 {
-                    ((Button)control).IsEnabled = true;
+                    btn.IsEnabled = true;
                 }
             }
         }
 
         private void disableButtons()
         {
-            foreach (var control in gameBoard.Children)
+            foreach (var control in GameBoard.Children)
             {
-                if (control is Button)
+                if (control is Button btn)
                 {
                     // clear each Cell
-                    ((Button)control).IsEnabled = false;
+                    btn.IsEnabled = false;
                 }
             }
         }
-        private void clearButtons()
+        public void ClearButtons()
         {
-            foreach (var control in gameBoard.Children)
+            foreach (var control in GameBoard.Children)
             {
-                if (control is Button)
+                if (control is Button btn)
                 {
                     // clear each Cell
-                    ((Button)control).Content = String.Empty;
+                    btn.Content = String.Empty;
                 }
             }
         }
@@ -226,8 +290,13 @@ namespace TicTacToe
         #endregion
 
         #region --- Private Member ---
-        private TicTacToeGame TicTacToe;
-        private int Mode;
+        private int MaxNumIterations = 100000;
+        private int CurrentIteration = 0;
+
+        private QLearningAI AI_x;
+        private QLearningAI AI_y;
+        private DispatcherTimer Timer;
+        private TicTacToeGame Game;
         #endregion
     }
 }

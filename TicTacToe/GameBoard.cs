@@ -18,6 +18,11 @@ namespace TicTacToe
             gameBoard = new string[i,i];
         }
 
+        public GameBoard(int x, int y)
+        {
+            gameBoard = new string[x, y];
+        }
+
         public void SetField(string player, int x, int y) 
         {
             if (gameBoard == null)

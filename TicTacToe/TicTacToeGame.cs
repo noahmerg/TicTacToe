@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.DirectoryServices.ActiveDirectory;
 using System.Linq;
+using System.Numerics;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using System.Windows.Controls.Ribbon;
 using System.Xaml;
 
@@ -21,6 +23,10 @@ namespace TicTacToe
         private GameBoard gameBoard;
         private Position[] allActions;
         public bool gameHasEnded { get; private set; }
+        public double PossibleWinReward { get; set; } = 0;
+        public double PossibleLossReward { get; set; } = 0;
+        public double WinReward { get; set; } = 0;
+        public double DrawReward { get; set; } = 0;
 
         public TicTacToeGame() 
         {
@@ -47,12 +53,13 @@ namespace TicTacToe
              */
         }
 
+        // x => o OR o => x
         public void SetNextPlayer()
         { 
-            // x => o OR o => x
             CurrentPlayer = CurrentPlayer == x ? o : x;
         }
 
+        // Resets gameBoard and currentPlayer
         public void Reset()
         {
             gameBoard.Reset();
@@ -61,16 +68,18 @@ namespace TicTacToe
             CurrentPlayer = x;
         }
 
-        public String GetField(int x, int y)
+        public String GetField(int x, int y) 
         {
             return gameBoard.GetField(x, y);
         }
 
+        /* 
+         * checks if a specific player has won by counting the player fields for each column
+         * if one of the counter is at 3, that means the player has won
+         */
         #region --- Winner and Draw Checks ---
         public Boolean CheckWinner(string player)
         { 
-            // the winner check is based on counting player fields for each row/column and diagonal
-            // if one of them equals 3 it means the player has won
             int diagPos = 0;
             int diagNeg = 0;
             for(int i = 0; i < 3; i++)
@@ -88,10 +97,9 @@ namespace TicTacToe
             }
             if (diagPos == 3 || diagNeg == 3) return true;
             return false;
-            // i know this could be changed to return (diagPos == gameBoardSize || diagNeg == gameBoardSize) but this makes it easier for me
         }
 
-        // if any field is null or empty return false | its that simple
+        // if any field is null or empty return false
         public bool CheckForFullBoard()
         {
             for (int i = 0; i < 3; ++i)
@@ -107,10 +115,12 @@ namespace TicTacToe
             return true;
         }
 
-        // function counts the player and opponent symbols in a row/column/diagonal and checks
-        // if the player count in a row/column/diagonal equals gameBoardSize (3) - 1 and 
-        // if the opponent count in that row/column/diagonal equals 0 
-        // means the player could win with his next move
+        /*
+         * function counts the player and opponent symbols in a row/column/diagonal and checks
+         * if the player count in a row/column/diagonal equals gameBoardSize (3) - 1 and 
+         * if the opponent count in that row/column/diagonal equals 0 
+         * means the player could win with his next move
+        */
         private bool CheckForPossibleWin(string player, int xPos, int yPos)
         {
             string opponent = player == x ? o : x;
@@ -150,6 +160,10 @@ namespace TicTacToe
             else return false;
         }
 
+        /*
+         * Is basically the opposite of CheckForPossibleWin(...). 
+         * However this method check it for the opponent and for all rows/columns/diagonals
+        */
         private bool CheckForPossibleLoss(string player)
         {
             string opponent = player == x ? o : x;
@@ -191,6 +205,8 @@ namespace TicTacToe
         #endregion
 
         #region --- IGameState Implementation ---
+        // each cell is represented by a 2-bit pair
+        // X = 01, O = 10, EMPTY = 00
         public uint Id
         {
             get
@@ -201,26 +217,25 @@ namespace TicTacToe
                 {
                     for (int y = 0; y < 3; y++)
                     {
-                        // 2 bits / cell = 18 Bits in total at maximum
                         id <<= 2;
 
                         string cellState = GetField(x, y);
 
                         if (cellState == "X")
                         {
-                            id |= 0b01; // x = 01
+                            id |= 0b01;
                         }
                         else if (cellState == "O")
                         {
-                            id |= 0b10; // o = 10
+                            id |= 0b10;
                         }
-                        // "" = 00
                     }
                 }
                 return id;
             }
         }
 
+        // If one cell is empty it can be added to a list of possible actions, this list is then returned
         public List<IAction> PossibleActions
         {
             get
@@ -241,55 +256,54 @@ namespace TicTacToe
                 return actions;
             }
         }
+
+        // after executing a Position several check methods are called, which determine the reward for this move, which is returned after
         public double ExecuteAction(IAction a)
         {
             if (!(a is Position))
             {
                 throw new ArgumentException("Invalid Action");
             }
+
             Position position =  a as Position;
             int xPos = position.x;
             int yPos = position.y;
-            string opponent = CurrentPlayer == x ? o : x;
+
             double reward = 0.0;
 
-            // set the field for the gameboard
             gameBoard.SetField(CurrentPlayer, xPos, yPos);
+
             if (CheckForPossibleWin(CurrentPlayer, xPos, yPos))
             {
-                reward = 0.6;
+                reward = PossibleWinReward;
             }
             if (CheckForPossibleLoss(CurrentPlayer))
             {
-                reward = -1.0;
+                reward = PossibleLossReward;
             }
-            // checks if the move resulted in winning
             if (CheckWinner(CurrentPlayer))
             {
-                // when the player won the game finished
                 gameHasEnded = true;
-                // best possible reward for winning
-                reward = 1.0;
+                reward = WinReward;
             }
-            // checks if the board is full
             if (CheckForFullBoard())
             {
-                // full board = game is ended
                 gameHasEnded = true;
-                // no reward for drawing
+                reward = DrawReward;
             }
+            // Debug.WriteLine(CurrentPlayer + " " + reward + " (" + Id + ")");
             if (!gameHasEnded)
             {
                 // if the game hasnt ended yet set next player
                 SetNextPlayer();
             }
-            // return the reward
             return reward;
        
         }
         #endregion
         #region --- Public Execute Function For Manual Playing
         // Function inspired by code provided by Professor Cristof Rezk-Salama (CRS | C.Rezk-Salama@hochschule-trier.de)
+        // this function can be used for manual playing
         public double TryExecuteAction(int x, int y)
         { 
             return ExecuteAction(allActions[x + y * 3]);

@@ -26,7 +26,9 @@
                 <RowDefinition Height="85"/>
                 <RowDefinition Height="85"/>
                 <RowDefinition Height="85"/>
-                <RowDefinition Height="300*"/>
+                <RowDefinition Height="29*"/>
+                <RowDefinition Height="186*"/>
+                <RowDefinition Height="160"/>
                 <RowDefinition Height="85"/>
                 <RowDefinition Height="85"/>
             </Grid.RowDefinitions>
@@ -39,8 +41,24 @@
             <TextBox HorizontalAlignment="Left" Margin="21,37,0,0" Grid.Row="2" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" LostFocus="ValidatePositiveInt" IsEnabled="False" x:Name="NumIterations" Height="18">1000000</TextBox>
             <Button Content="Train" Height="18" HorizontalAlignment="Left" Margin="21,15,0,0" Grid.Row="3" VerticalAlignment="Top" Width="120" x:Name="Train" Click="StartTraining" Cursor="Hand"/>
             <ProgressBar HorizontalAlignment="Left" Height="18" Margin="21,49,0,0" Grid.Row="3" VerticalAlignment="Top" Width="120" x:Name="Progress" Value="50"/>
-            <Button Content="New Game" Grid.Row="7" Margin="25,25,25,25" FontSize="20" BorderBrush="White" Background="{x:Null}" Foreground="White" x:Name="btnNewGame" Click="btnNewGame_Click" Cursor="Hand"/>
-            <TextBlock HorizontalAlignment="Center" Grid.Row="5" TextWrapping="Wrap" Text="" VerticalAlignment="Center" Width="Auto" x:Name="winnerText" Foreground="#FFE6E6E6" FontSize="30"/>
+            <Button Content="New Game" Grid.Row="8" Margin="25,25,25,25" FontSize="20" BorderBrush="White" Background="{x:Null}" Foreground="White" x:Name="btnNewGame" Click="btnNewGame_Click" Cursor="Hand"/>
+            <TextBlock HorizontalAlignment="Center" Grid.Row="7" TextWrapping="Wrap" Text="" VerticalAlignment="Center" Width="Auto" x:Name="winnerText" Foreground="#FFE6E6E6" FontSize="30"/>
+            <Label Content="X wins: 0" HorizontalAlignment="Left" Margin="15,1,0,0" Grid.Row="6" VerticalAlignment="Top" x:Name="xWinsLabel" Foreground="#FF0666B0" FontSize="16"/>
+            <Label Content="O wins: 0" HorizontalAlignment="Left" Margin="15,28,0,0" Grid.Row="6" VerticalAlignment="Top" x:Name="oWinsLabel" Foreground="#FFB06306" FontSize="16"/>
+            <Label Content="Draws: 0" HorizontalAlignment="Left" Margin="15,55,0,0" Grid.Row="6" VerticalAlignment="Top" x:Name="drawsLabel" Foreground="#FF8A3CCE" FontSize="16"/>
+            <Label Content="Total: 0" HorizontalAlignment="Left" Margin="15,82,0,0" Grid.Row="6" VerticalAlignment="Top" x:Name="totalLabel" Foreground="#FFE6E6E6" FontSize="16"/>
+            <ProgressBar HorizontalAlignment="Left" Height="18" Margin="21,120,0,0" Grid.Row="6" VerticalAlignment="Top" Width="120" x:Name="oWins" Value="100" Background="{x:Null}" Foreground="#FFB06306" BorderBrush="{x:Null}"/>
+            <ProgressBar HorizontalAlignment="Left" Height="18" Margin="21,120,0,0" Grid.Row="6" VerticalAlignment="Top" Width="120" x:Name="draws" Value="66" Background="{x:Null}" Foreground="#FF8A3CCE" BorderBrush="{x:Null}"/>
+            <ProgressBar HorizontalAlignment="Left" Height="18" Margin="21,120,0,0" Grid.Row="6" VerticalAlignment="Top" Width="120" x:Name="xWins" Value="33" Background="{x:Null}" Foreground="#FF0666B0" BorderBrush="{x:Null}"/>
+            <CheckBox Content="AI 2 takes random moves" HorizontalAlignment="Left" Margin="21,0,0,0" Grid.Row="4" VerticalAlignment="Center" Foreground="#FFE6E6E6" IsChecked="False" x:Name="AI2Random"/>
+            <TextBlock HorizontalAlignment="Left" Margin="21,6,0,0" Grid.Row="5" TextWrapping="Wrap" Text="Reward for Possible Win" VerticalAlignment="Top" Foreground="#FFE6E6E6" x:Name="PossibleWinRewardLabel"/>
+            <TextBox HorizontalAlignment="Left" Margin="21,24,0,0" Grid.Row="5" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Height="18" x:Name="PossibleWinReward" LostFocus="PossibleWinReward_TextChanged">0.6</TextBox>
+            <TextBlock HorizontalAlignment="Left" Margin="21,48,0,0" Grid.Row="5" TextWrapping="Wrap" Text="Reward for Possible Loss" VerticalAlignment="Top" Foreground="#FFE6E6E6" x:Name="PossibleLossRewardLabel"/>
+            <TextBox HorizontalAlignment="Left" Margin="21,66,0,0" Grid.Row="5" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Height="18" x:Name="PossibleLossReward" LostFocus="PossibleLossReward_TextChanged">-1.0</TextBox>
+            <TextBlock HorizontalAlignment="Left" Margin="21,90,0,0" Grid.Row="5" TextWrapping="Wrap" Text="Reward for Win" VerticalAlignment="Top" Foreground="#FFE6E6E6" x:Name="WinRewardLabel"/>
+            <TextBox HorizontalAlignment="Left" Margin="21,108,0,0" Grid.Row="5" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Height="18" x:Name="WinReward" LostFocus="WinReward_TextChanged">0.9</TextBox>
+            <TextBlock HorizontalAlignment="Left" Margin="21,132,0,0" Grid.Row="5" TextWrapping="Wrap" Text="Reward for Draw" VerticalAlignment="Top" Foreground="#FFE6E6E6" x:Name="DrawRewardLabel"/>
+            <TextBox HorizontalAlignment="Left" Margin="21,150,0,0" Grid.Row="5" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Height="18" x:Name="DrawReward" LostFocus="DrawReward_TextChanged">0.5</TextBox>
         </Grid>
         <Grid x:Name="GameBoard" Grid.Column="1">
             <Grid.RowDefinitions>

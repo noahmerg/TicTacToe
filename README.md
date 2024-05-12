@@ -8,34 +8,6 @@ Dieses Repository wurde keineswegs professionell behandelt, da es ursprünglich 
 
 Betreuer: Professor Dr. Cristof Rezk-Salama
 
-### Inhaltsverzeichnis
-
-[Tic-Tac-Toe Lösung mit Q-Learning i](#_Toc159706329)
-
-[1 Motivation 1](#_Toc159706330)
-
-[2 Übersicht über die Softwarearchitektur und Spielaufbau 2](#_Toc159706331)
-
-[2.1 Position 2](#_Toc159706332)
-
-[2.2 GameBoard 2](#_Toc159706333)
-
-[2.3 TicTacToeGame 2](#_Toc159706334)
-
-[2.4 MainWindow 3](#_Toc159706335)
-
-[2.4.1 Modus: Player vs. AI 3](#_Toc159706336)
-
-[2.4.2 Modus: AI vs. AI 4](#_Toc159706337)
-
-[2.4.3 Modus: Player vs. Player 5](#_Toc159706338)
-
-[3 Bedienungshinweise 6](#_Toc159706339)
-
-[4 Analyse und Bewertung der Ergebnisse 7](#_Toc159706340)
-
-[5 Reflexion 9](#_Toc159706341)
-
 # Motivation
 
 Das Spiel Tic-Tac-Toe, das oft als einfaches Kinderspiel betrachtet wird, bringt mathematische Herausforderungen und bietet einen faszinierenden Einblick in die Anwendung von künstlicher Intelligenz in der Welt der Spiele. Besonders beeindruckend persönlich finde ich die mathematische Komplexität dieses scheinbar simplen Spiels. Mit über 5500 möglichen Spielzuständen erfordert es eine komplexe Strategie, um die optimale Entscheidung in jedem Zug zu treffen.

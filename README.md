@@ -1,6 +1,7 @@
 # Anbei die von Word zu Markdown konvertierte Dokumentation zu diesem Projekt. 
 
 Das Projekt wurde mit der Note 1.0 bewertet
+Dieses Repository wurde keineswegs professionell behandelt, da es ursprünglich für den privaten Datentransfer zwischen meinen Geräten gedacht war.
 
 ## Tic-Tac-Toe Lösung mit Q-Learning
 
